@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<meta charset="UTF-8" />
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+var width = window.innerWidth,
+    height = window.innerHeight;
+
+var nodes = d3.range(8).map(function() { return { radius: 10 } }),
+    root = nodes[0];
+
+root.radius = 0;
+root.fixed = true;
+root.px = width / 2.0;
+root.py = height / 2.0;
+
+// use this as the equation for charge
+// until we come up with something better
+// seems to work ok up until nodes.length == 12
+var charge = 1000 * nodes.length - 18500;
+
+var force = d3.layout.force()
+    .gravity(0.15)
+    .charge(function(d, i) { return i ? -2055 : charge; })
+    .nodes(nodes)
+    .size([width, height]);
+
+force.start();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.selectAll("circle")
+    .data(nodes.slice(1))
+  .enter().append("circle")
+    .attr("r", function(d) { return d.radius; })
+    .style("fill", "white")
+    .style("stroke", "lime")
+    .style("stroke-width", "3")
+    .call(force.drag);
+
+force.on("tick", function(e) {
+  var q = d3.geom.quadtree(nodes),
+      i = 0,
+      n = nodes.length;
+
+  svg.selectAll("circle")
+      .attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; });
+});
+
+</script>
+</body>
